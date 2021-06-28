@@ -3,7 +3,6 @@
 #include <rsa.h>
 
 using namespace ECC;
-
 /*--------------------FIELD ELEMENTS--------------------*/
 
 S256FieldElement::S256FieldElement(Integer num, Integer prime)
