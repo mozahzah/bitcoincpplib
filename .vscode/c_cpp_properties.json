@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "g++",
+            "includePath": [
+                "${default}",
+                "${workspaceFolder}",
+                "C:/msys64/mingw64/include/cryptopp"
+            ],
+            "intelliSenseMode": "windows-gcc-x86",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
+            "browse": {
+                "path": [
+                    "${default}",
+                    "${workspaceFolder}",
+                    "C:/msys64/mingw64/include/cryptopp"
+                ]
+            }
+        }
+    ],
+    "version": 4
+}
