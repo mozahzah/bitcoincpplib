@@ -1,11 +1,14 @@
 #include "hex.h"
 #include "files.h"
 #include "sha.h"
+#include "cryptlib.h"
 #include <iomanip>
 #include <sstream>
+#include <string>
 
 #ifndef HELPER_CPP
 #define HELPER_CPP
+
 
 
 namespace HashLib
@@ -27,7 +30,7 @@ namespace HashLib
         return hashString;
     }
 
-    std::string int_to_little_endian(Integer n, int byte_size)
+    std::string int_to_little_endian(CryptoPP::Integer n, int byte_size)
     {
         uint64_t i = n.ConvertToLong();
         if (byte_size == 1)
@@ -69,7 +72,49 @@ namespace HashLib
         return stream.str();
     }
 
-    std::string encode_varint(Integer n)
+    std::string int_to_little_endian(std::string n, int byte_size)
+    {
+        uint64_t i = CryptoPP::Integer(n.c_str()).ConvertToLong();
+        if (byte_size == 1)
+        {
+            std::stringstream stream;
+            stream << std::setfill ('0') << std::setw(byte_size*2) 
+            << std::hex << i;
+            return stream.str();
+        }
+
+        if (byte_size % 2 != 0 || byte_size > 32) throw std::invalid_argument("Byte size Error");
+        
+        uint64_t swapped;
+
+        if (byte_size == 2)
+        {
+            swapped =  ((i<<8)&0x00FF) | ((i>>8)&0xFF00);
+        }
+
+        if (byte_size == 4)
+        {
+            swapped = ((i>>24)) | 
+                    ((i<<8)&0x00FF0000) | 
+                    ((i>>8)&0x0000FF00) | 
+                    ((i<<24));
+        }
+
+        if (byte_size == 8)
+        {
+            swapped = ((((i) >> 56)&0x00000000000000FF) | (((i) >> 40)&0x000000000000FF00) | 
+                        (((i) >> 24)&0x0000000000FF0000) | (((i) >>  8)&0x00000000FF000000) | 
+                        (((i) <<  8)&0x000000FF00000000) | (((i) << 24)&0x0000FF0000000000) | 
+                        (((i) << 40)&0x00FF000000000000) | (((i) << 56)&0xFF00000000000000));
+        }
+
+        std::stringstream stream;
+        stream << std::setfill ('0') << std::setw(byte_size*2) 
+        << std::hex << swapped;
+        return stream.str();
+    }
+
+    std::string encode_varint(CryptoPP::Integer n)
     {
         __uint128_t i = n.ConvertToLong();
 

@@ -6,7 +6,7 @@ std::string Script::Serialize()
         std::string result;
         for (auto cmd : this->commands)
         {
-            if (typeid(cmd).name() == "int")
+            if (std::stoi(cmd))
             {
                 result = HashLib::int_to_little_endian(cmd, 1);
             }
@@ -34,5 +34,7 @@ std::string Script::Serialize()
                 result += cmd;
             }
         }
-    return result;
+    int64_t size = sizeof(result);
+    std::string final_result = HashLib::encode_varint(size) + result;
+    return final_result;
 }
