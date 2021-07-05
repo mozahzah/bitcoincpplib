@@ -168,7 +168,6 @@ S256Point S256Point::Parse(std::string sec_pubkey)
 
 bool S256Point::Verify(Integer z, Signature sig)
 {
-    //ModularArithmetic ma(N);
     Integer s_inv = a_exp_b_mod_c(sig.s, N-2, N);
     Integer u = z * s_inv % N;
     Integer v = sig.r * s_inv % N;

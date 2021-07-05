@@ -9,12 +9,12 @@ using namespace CryptoPP;
 class Txin
 {
     public:
-        Txin(std::string prev_tx, int prev_index, Script script_sig, uint64_t sequence);
+        Txin(std::string prev_tx, int prev_index, Script script_sig, Integer sequence);
 
         std::string prev_tx;
         int prev_index;
         Script script_sig;
-        uint64_t sequence;
+        Integer sequence;
 
         std::string Serialize();
 
@@ -30,7 +30,6 @@ class Txout
         std::string Serialize();
 };
 
-
 class Tx
 {
     public:
@@ -44,8 +43,15 @@ class Tx
     public:
         Tx(Integer version, std::vector<Txin> tx_ins,std::vector<Txout> tx_outs,Integer locktime,bool testnet);
         Integer TxId();
+
+        Integer HashToSign(uint64_t Input_Index, Script script_pubkey);
+        bool SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key, Script script_pubkey);
+        bool VerifyInput(uint64_t Input_Index);
+
         std::string TxHash();
         std::string Serialize();
+
+
         Tx Parse(std::string s, bool testnet);
 
 };

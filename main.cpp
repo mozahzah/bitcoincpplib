@@ -20,20 +20,25 @@ int main ()
     // bool b = priv.publicPoint.Verify(z, sig);
     // cout << boolalpha;
     // cout << b << endl;
-
+    std::string passphrase = "mazeebitcoin@gmail.commzmzmzmzmzmzm";
+    ECC::PrivateKey Priv = ECC::PrivateKey(Integer(HashLib::Hash256(passphrase).c_str()));
 
     std::string prev_tx = "2813e203b6720dea3caff9983a5a0ca5e0a24bb73ccb93a8a6974b7e9a5e2a36";
     int prev_index = 1;
     
-    Txin tx_in = Txin(prev_tx, prev_index, Script(), 0xffffffff);
+    Txin tx_in = Txin(prev_tx, prev_index, Script(), Integer("0xffffffff"));
     std::vector<Txin> txins {tx_in};
-    
-    Txout tx_out = Txout(5,Script());
+    Script p2bkh = Script();
+    Txout tx_out = Txout(5,p2bkh.P2BKH("ad346f8eb57dee9a37981716e498120ae80e44f7"));
     std::vector<Txout> txouts {tx_out};
 
     Tx txObj = Tx(1, txins,txouts,0,true);
 
     Tx tx = Tx(1, txins, txouts, 1, false);
+
+    
+    //tx.SignInput(0,Priv);
+    //cout << p2bkh.P2BKH("ad346f8eb57dee9a37981716e498120ae80e44f7").Serialize(); 
 
     cout << tx.Serialize();
 
