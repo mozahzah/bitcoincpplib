@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 
+
 #ifndef HELPER_CPP
 #define HELPER_CPP
 
@@ -32,86 +33,59 @@ namespace HashLib
 
     std::string int_to_little_endian(CryptoPP::Integer n, int byte_size)
     {
-        uint64_t i = n.ConvertToLong();
-        if (byte_size == 1)
-        {
-            std::stringstream stream;
-            stream << std::setfill ('0') << std::setw(byte_size*2) 
-            << std::hex << i;
-            return stream.str();
+        CryptoPP::byte b[byte_size];
+        n.Encode(b, byte_size);
+        std::string s;
+        CryptoPP::HexEncoder encoder(new CryptoPP::StringSink(s), false);
+        encoder.Put(b, sizeof(b));
+        encoder.MessageEnd();
+        int l = strlen(s.c_str());
+        for (int i = 0,j = l; i < l/2; i += 2, j-=2) 
+        {   
+            auto temp = s[j-2];
+            s[j-2] = s[i];
+            s[i] = temp;
+
+            auto temp2 = s[j-1];
+            s[j-1] = s[i+1];
+            s[i+1] = temp2;
         }
-
-        if (byte_size % 2 != 0 || byte_size > 32) throw std::invalid_argument("Byte size Error");
-        
-        uint64_t swapped;
-
-        if (byte_size == 2)
-        {
-            swapped =  ((i<<8)&0x00FF) | ((i>>8)&0xFF00);
-        }
-
-        if (byte_size == 4)
-        {
-            swapped = ((i>>24)) | 
-                    ((i<<8)&0x00FF0000) | 
-                    ((i>>8)&0x0000FF00) | 
-                    ((i<<24));
-        }
-
-        if (byte_size == 8)
-        {
-            swapped = ((((i) >> 56)&0x00000000000000FF) | (((i) >> 40)&0x000000000000FF00) | 
-                        (((i) >> 24)&0x0000000000FF0000) | (((i) >>  8)&0x00000000FF000000) | 
-                        (((i) <<  8)&0x000000FF00000000) | (((i) << 24)&0x0000FF0000000000) | 
-                        (((i) << 40)&0x00FF000000000000) | (((i) << 56)&0xFF00000000000000));
-        }
-
-        std::stringstream stream;
-        stream << std::setfill ('0') << std::setw(byte_size*2) 
-        << std::hex << swapped;
-        return stream.str();
+        return s;
     }
 
     std::string int_to_little_endian(std::string n, int byte_size)
     {
-        uint64_t i = CryptoPP::Integer(n.c_str()).ConvertToLong();
-        if (byte_size == 1)
-        {
-            std::stringstream stream;
-            stream << std::setfill ('0') << std::setw(byte_size*2) 
-            << std::hex << i;
-            return stream.str();
-        }
+        CryptoPP::Integer i = CryptoPP::Integer(n.c_str());
+        CryptoPP::byte b[byte_size];
+        i.Encode(b, byte_size);
+        std::string s;
+        CryptoPP::HexEncoder encoder(new CryptoPP::StringSink(s), false);
+        encoder.Put(b, sizeof(b));
+        encoder.MessageEnd();
+        int l = strlen(s.c_str());
+        for (int i = 0,j = l; i < l/2; i += 2, j-=2) 
+        {   
+            auto temp = s[j-2];
+            s[j-2] = s[i];
+            s[i] = temp;
 
+            auto temp2 = s[j-1];
+            s[j-1] = s[i+1];
+            s[i+1] = temp2;
+        }
+        return s;
+    }
+
+    std::string int_to_big_endian(CryptoPP::Integer n, int byte_size)
+    {
         if (byte_size % 2 != 0 || byte_size > 32) throw std::invalid_argument("Byte size Error");
-        
-        uint64_t swapped;
-
-        if (byte_size == 2)
-        {
-            swapped =  ((i<<8)&0x00FF) | ((i>>8)&0xFF00);
-        }
-
-        if (byte_size == 4)
-        {
-            swapped = ((i>>24)) | 
-                    ((i<<8)&0x00FF0000) | 
-                    ((i>>8)&0x0000FF00) | 
-                    ((i<<24));
-        }
-
-        if (byte_size == 8)
-        {
-            swapped = ((((i) >> 56)&0x00000000000000FF) | (((i) >> 40)&0x000000000000FF00) | 
-                        (((i) >> 24)&0x0000000000FF0000) | (((i) >>  8)&0x00000000FF000000) | 
-                        (((i) <<  8)&0x000000FF00000000) | (((i) << 24)&0x0000FF0000000000) | 
-                        (((i) << 40)&0x00FF000000000000) | (((i) << 56)&0xFF00000000000000));
-        }
-
-        std::stringstream stream;
-        stream << std::setfill ('0') << std::setw(byte_size*2) 
-        << std::hex << swapped;
-        return stream.str();
+        CryptoPP::byte b[byte_size];
+        n.Encode(b, byte_size);
+        std::string s;
+        CryptoPP::HexEncoder encoder(new CryptoPP::StringSink(s), false);
+        encoder.Put(b, sizeof(b));
+        encoder.MessageEnd();
+        return s;
     }
 
     std::string encode_varint(CryptoPP::Integer n)

@@ -82,9 +82,12 @@ std::string Txin::Serialize()
 bool Tx::SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key, Script script_pubkey)
 {
     Integer z = this->HashToSign(Input_Index, script_pubkey);
-    
-    std::string der;
-    Private_Key.Sign(z);
+    auto der = Private_Key.Sign(z).Der();
+    der += "01";
+    auto pub_key = Private_Key.publicPoint.Sec();
+    auto script_sig = Script({der,pub_key});
+    this->tx_ins[Input_Index].script_sig = script_sig;
+    return false;
 }
 
 Integer Tx::HashToSign(uint64_t Input_Index, Script script_pubkey)
@@ -92,7 +95,6 @@ Integer Tx::HashToSign(uint64_t Input_Index, Script script_pubkey)
     std::string result;
     result += HashLib::int_to_little_endian(this->version, 4);
     result += HashLib::encode_varint(this->tx_ins.size());
-
     for (int i = 0; i < this->tx_ins.size(); i++)
     {
         if (i == Input_Index){

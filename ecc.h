@@ -61,6 +61,7 @@ class Signature
         Signature(Integer r, Integer s);
         Signature() : Signature(0, 0){};
         static Signature Parse(std::string der_signature);
+        std::string Der();
 };
 
 class S256Point
@@ -86,6 +87,7 @@ class S256Point
 
         static S256Point Parse(std::string sec_pubkey);
         bool Verify(Integer z, Signature sig);
+        std::string Sec();
 };
 
 S256Point G = S256Point(GX,GY,A,B);

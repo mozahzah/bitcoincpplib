@@ -20,9 +20,11 @@ int main ()
     // bool b = priv.publicPoint.Verify(z, sig);
     // cout << boolalpha;
     // cout << b << endl;
-    std::string passphrase = "mazeebitcoin@gmail.commzmzmzmzmzmzm";
-    ECC::PrivateKey Priv = ECC::PrivateKey(Integer(HashLib::Hash256(passphrase).c_str()));
 
+    //std::string passphrase = "mazeebitcoin@gmail.commzmzmzmzmzmzm";
+    //std::cout << HashLib::Hash256(passphrase);
+
+    ECC::PrivateKey Priv = ECC::PrivateKey(123);
     std::string prev_tx = "2813e203b6720dea3caff9983a5a0ca5e0a24bb73ccb93a8a6974b7e9a5e2a36";
     int prev_index = 1;
     
@@ -36,11 +38,14 @@ int main ()
 
     Tx tx = Tx(1, txins, txouts, 1, false);
 
-    
+    Priv.Sign(123).Der();
     //tx.SignInput(0,Priv);
     //cout << p2bkh.P2BKH("ad346f8eb57dee9a37981716e498120ae80e44f7").Serialize(); 
 
-    cout << tx.Serialize();
-
+    //cout << tx.Serialize();
+    //me
+    auto s = "304402200a91270afe7ef1f2e3284abf443b35f2abd6e6767433459b78b301d9c57136a4022039abfcd5238aa064fef7d4d38f23132a0f8d227317518787fa81e6000b7b6f94";
+    //python
+    auto s2 = "304402200a91270afe7ef1f2e3284abf443b35f2abd6e6767433459b78b301d9c57136a4022039abfcd5238aa064fef7d4d38f23132a0f8d227317518787fa81e6000b7b6f94";
     return 0;
 }

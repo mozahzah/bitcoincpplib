@@ -202,3 +202,47 @@ ECC::PrivateKey::PrivateKey(Integer secret)
     this->secret = secret;
     this->publicPoint = G * secret;
 }
+
+std::string ECC::Signature::Der()
+{   
+    std::string result;
+    auto rbin = HashLib::int_to_big_endian(this->r, 32);
+    for (std::string::iterator i = rbin.begin(); i < rbin.end(); i++)
+    {
+        if (*i == '0' && *(i+1) == '0')
+        {
+            continue;
+        }
+        else
+        {
+            rbin.erase(remove(rbin.begin(), i, '0'), i);
+            break;
+        }
+    }
+    if (rbin[0] == '8' && rbin[1] == '0')
+    {
+        rbin = "00" + rbin;
+    }
+    result = HashLib::int_to_little_endian(2, 1) + HashLib::int_to_little_endian(rbin.size()/2, 1) + rbin;
+    auto sbin = HashLib::int_to_big_endian(this->s, 32);
+    for (std::string::iterator i = sbin.begin(); i < sbin.end(); i+=2)
+    {
+        if (*i == '0' && *(i+1) == '0')
+        {
+            continue;
+        }
+        else
+        {
+            sbin.erase(remove(sbin.begin(), i, '0'), i);
+            break;
+        }
+    }
+    if (sbin[0] == '8' && sbin[1] == '0')
+    {
+        sbin = "00" + sbin;   
+    }
+    result += HashLib::int_to_little_endian(2, 1) + HashLib::int_to_little_endian(sbin.size()/2, 1) + sbin;
+    result = "30" + HashLib::int_to_little_endian(result.size()/2, 1) + result;
+    std::cout << result << std::endl;
+    return result;
+}
