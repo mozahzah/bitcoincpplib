@@ -175,6 +175,14 @@ bool S256Point::Verify(Integer z, Signature sig)
     return total.x.num == sig.r;
 }
 
+std::string S256Point::Sec()
+{
+    std::string result;
+    result = "04" + HashLib::int_to_big_endian(this->x.num,32);
+    result += HashLib::int_to_big_endian(this->y.num,32);
+    return result;
+}
+
 Signature::Signature(Integer r, Integer s)
 {
     this->r = r;
@@ -243,6 +251,5 @@ std::string ECC::Signature::Der()
     }
     result += HashLib::int_to_little_endian(2, 1) + HashLib::int_to_little_endian(sbin.size()/2, 1) + sbin;
     result = "30" + HashLib::int_to_little_endian(result.size()/2, 1) + result;
-    std::cout << result << std::endl;
     return result;
 }

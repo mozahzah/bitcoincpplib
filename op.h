@@ -40,6 +40,7 @@ enum OP_CODES
     OP_HASH256 = 170,
     OP_CHECKSIG = 172,
     OP_CHECKSIGVERIFY = 173,
+    OP_DUP = 118,	
 };
 
 class Op

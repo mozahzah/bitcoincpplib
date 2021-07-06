@@ -31,21 +31,20 @@ int main ()
     Txin tx_in = Txin(prev_tx, prev_index, Script(), Integer("0xffffffff"));
     std::vector<Txin> txins {tx_in};
     Script p2bkh = Script();
-    Txout tx_out = Txout(5,p2bkh.P2BKH("ad346f8eb57dee9a37981716e498120ae80e44f7"));
+    Txout tx_out = Txout(5, p2bkh.P2BKH("ad346f8eb57dee9a37981716e498120ae80e44f7"));
     std::vector<Txout> txouts {tx_out};
 
     Tx txObj = Tx(1, txins,txouts,0,true);
 
-    Tx tx = Tx(1, txins, txouts, 1, false);
+    Tx tx = Tx(1, txins, txouts, 0, false);
 
-    Priv.Sign(123).Der();
-    //tx.SignInput(0,Priv);
-    //cout << p2bkh.P2BKH("ad346f8eb57dee9a37981716e498120ae80e44f7").Serialize(); 
+    //Priv.Sign(123).Der();
+    tx.SignInput(0,Priv, p2bkh.P2BKH("fbb48feaea1944cd5498d012a6a72890f88604e5"));
+    cout << tx.Serialize();
 
-    //cout << tx.Serialize();
-    //me
-    auto s = "304402200a91270afe7ef1f2e3284abf443b35f2abd6e6767433459b78b301d9c57136a4022039abfcd5238aa064fef7d4d38f23132a0f8d227317518787fa81e6000b7b6f94";
-    //python
-    auto s2 = "304402200a91270afe7ef1f2e3284abf443b35f2abd6e6767433459b78b301d9c57136a4022039abfcd5238aa064fef7d4d38f23132a0f8d227317518787fa81e6000b7b6f94";
+
+
+
+
     return 0;
 }

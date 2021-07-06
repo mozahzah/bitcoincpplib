@@ -13,21 +13,26 @@
 
 
 namespace HashLib
-{
-    std::string Hash256(std::string s)
-    {
+{   
+    std::string Hash256(std::string hex)
+    {   
+        hex = hex + "h";
+        Integer i = Integer(hex.c_str()); 
+        CryptoPP::byte b[i.MinEncodedSize()];
+        i.Encode(b, i.MinEncodedSize());
+
         CryptoPP::SHA256 hasher;
         CryptoPP::byte hash1[CryptoPP::SHA256::DIGESTSIZE];
-        hasher.CalculateDigest(hash1, (CryptoPP::byte*)s.data(), s.size());
+        hasher.CalculateDigest(hash1, b, i.MinEncodedSize());
     
         CryptoPP::byte hash2[CryptoPP::SHA256::DIGESTSIZE];
-        hasher.CalculateDigest(hash2, hash1, sizeof(hash1));
+        hasher.CalculateDigest(hash2, hash1, 32);
 
         std::string hashString;
         CryptoPP::HexEncoder encoder(new CryptoPP::StringSink(hashString));
         encoder.Put(hash2, sizeof(hash2));
         encoder.MessageEnd();
-
+        std::cout << "Hash to sign: " << hashString << std::endl;
         return hashString;
     }
 
@@ -102,28 +107,27 @@ namespace HashLib
         else if (i < 0x10000)
         {
             std::stringstream stream;
-            stream << "0xfd" << int_to_little_endian(i,2);
+            stream << "fd" << int_to_little_endian(i,2);
             return stream.str();
         }
 
         else if (i < 0x100000000)
         {
             std::stringstream stream;
-            stream << "0xfe" << int_to_little_endian(i,4); 
+            stream << "fe" << int_to_little_endian(i,4); 
             return stream.str();
         }
 
         else if (i < 0x1000000000000000)
         {
             std::stringstream stream;
-            stream << "0xff" << int_to_little_endian(i,8); 
+            stream << "ff" << int_to_little_endian(i,8); 
             return stream.str();
         }
         else 
         {
             throw std::invalid_argument("Number too big Error");
-        }
-        
+        } 
     }
 }
     

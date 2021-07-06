@@ -25,22 +25,22 @@ std::string Tx::TxHash()
 std::string Tx::Serialize()
 {
     std::string result;
-    result = "version";
-    result += HashLib::int_to_little_endian(this->version, 4).c_str();
-    result += "varint";
-    result += HashLib::encode_varint(tx_ins.size()).c_str();
-    result += "txin";
+    //result = "version";
+    result += HashLib::int_to_little_endian(this->version, 4);
+    //result += "varint";
+    result += HashLib::encode_varint(tx_ins.size());
+    //result += "txin";
     for (Txin tx_in : tx_ins)
     {
         result += tx_in.Serialize();
     }
-    result += "txout";
+    //result += "txout";
     for (Txout tx_out : tx_outs)
     {
         result += tx_out.Serialize();
     }
-    result += "locktime";
-    result += HashLib::int_to_little_endian(this->locktime, 4).c_str();
+    //result += "locktime";
+    result += HashLib::int_to_little_endian(this->locktime, 4);
     return result;
 }
 
@@ -72,7 +72,8 @@ std::string Txin::Serialize()
         this->prev_tx[j-1] = this->prev_tx[i+1];
         this->prev_tx[i+1] = temp2;
     }
-    std::string result = prev_tx;
+    std::string result;
+    result += prev_tx;
     result += HashLib::int_to_little_endian(this->prev_index, 4);
     result += this->script_sig.Serialize();
     result += HashLib::int_to_little_endian(this->sequence, 4);    
@@ -87,7 +88,7 @@ bool Tx::SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key, Script scr
     auto pub_key = Private_Key.publicPoint.Sec();
     auto script_sig = Script({der,pub_key});
     this->tx_ins[Input_Index].script_sig = script_sig;
-    return false;
+    return true;
 }
 
 Integer Tx::HashToSign(uint64_t Input_Index, Script script_pubkey)
@@ -97,7 +98,8 @@ Integer Tx::HashToSign(uint64_t Input_Index, Script script_pubkey)
     result += HashLib::encode_varint(this->tx_ins.size());
     for (int i = 0; i < this->tx_ins.size(); i++)
     {
-        if (i == Input_Index){
+        if (i == Input_Index)
+        {
             result += Txin(this->tx_ins[i].prev_tx, this->tx_ins[i].prev_index, 
             script_pubkey, this->tx_ins[i].sequence).Serialize();
         }
@@ -112,7 +114,7 @@ Integer Tx::HashToSign(uint64_t Input_Index, Script script_pubkey)
     }
     result += HashLib::int_to_little_endian(this->locktime,4);
     result += HashLib::int_to_little_endian(1, 4);
-    std::string h256 = HashLib::Hash256(result);
+    std::string h256 = HashLib::Hash256(result) + 'h';
     return Integer(h256.c_str());
 }
 

@@ -17,6 +17,7 @@ class Txin
         Integer sequence;
 
         std::string Serialize();
+        std::string GetPreviousScriptPubKey();
 
 };
 
