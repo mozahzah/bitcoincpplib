@@ -178,8 +178,8 @@ bool S256Point::Verify(Integer z, Signature sig)
 std::string S256Point::Sec()
 {
     std::string result;
-    result = "04" + HashLib::int_to_big_endian(this->x.num,32);
-    result += HashLib::int_to_big_endian(this->y.num,32);
+    result = "04" + HashLib::int_to_big_endian(this->x.num, 32);
+    result += HashLib::int_to_big_endian(this->y.num, 32);
     return result;
 }
 
@@ -214,8 +214,8 @@ ECC::PrivateKey::PrivateKey(Integer secret)
 std::string ECC::Signature::Der()
 {   
     std::string result;
-    auto rbin = HashLib::int_to_big_endian(this->r, 32);
-    for (std::string::iterator i = rbin.begin(); i < rbin.end(); i++)
+    std::string rbin = HashLib::int_to_big_endian(this->r, 32);
+    for (std::string::iterator i = rbin.begin(); i < rbin.end(); i+=2)
     {
         if (*i == '0' && *(i+1) == '0')
         {
@@ -227,13 +227,20 @@ std::string ECC::Signature::Der()
             break;
         }
     }
-    if (rbin[0] == '8' && rbin[1] == '0')
+    std::string firstbyte;
+    firstbyte.push_back(rbin[0]);
+    firstbyte.push_back(rbin[1]);
+    firstbyte.push_back('h');
+
+    std::cout << firstbyte << std::endl;
+
+    if (Integer(firstbyte.c_str()) > 0x80)
     {
         rbin = "00" + rbin;
     }
     result = HashLib::int_to_little_endian(2, 1) + HashLib::int_to_little_endian(rbin.size()/2, 1) + rbin;
     auto sbin = HashLib::int_to_big_endian(this->s, 32);
-    for (std::string::iterator i = sbin.begin(); i < sbin.end(); i+=2)
+    for (std::string::iterator i = sbin.begin(); i <= sbin.end(); i+=2)
     {
         if (*i == '0' && *(i+1) == '0')
         {
@@ -245,11 +252,17 @@ std::string ECC::Signature::Der()
             break;
         }
     }
-    if (sbin[0] == '8' && sbin[1] == '0')
+    firstbyte.clear();
+    firstbyte.push_back(sbin[0]);
+    firstbyte.push_back(sbin[1]);
+    firstbyte.push_back('h');
+
+    if (Integer(firstbyte.c_str()) > 0x80)
     {
         sbin = "00" + sbin;   
     }
     result += HashLib::int_to_little_endian(2, 1) + HashLib::int_to_little_endian(sbin.size()/2, 1) + sbin;
     result = "30" + HashLib::int_to_little_endian(result.size()/2, 1) + result;
+    std::cout << result << std::endl;
     return result;
 }

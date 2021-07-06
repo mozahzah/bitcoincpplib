@@ -35,6 +35,7 @@ std::string Tx::Serialize()
         result += tx_in.Serialize();
     }
     //result += "txout";
+    result += HashLib::encode_varint(tx_outs.size());
     for (Txout tx_out : tx_outs)
     {
         result += tx_out.Serialize();
@@ -86,7 +87,7 @@ bool Tx::SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key, Script scr
     auto der = Private_Key.Sign(z).Der();
     der += "01";
     auto pub_key = Private_Key.publicPoint.Sec();
-    auto script_sig = Script({der,pub_key});
+    auto script_sig = Script({der, pub_key});
     this->tx_ins[Input_Index].script_sig = script_sig;
     return true;
 }

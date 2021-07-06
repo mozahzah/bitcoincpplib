@@ -44,6 +44,7 @@ namespace HashLib
         CryptoPP::HexEncoder encoder(new CryptoPP::StringSink(s), false);
         encoder.Put(b, sizeof(b));
         encoder.MessageEnd();
+        if (byte_size == 1) return s;
         int l = strlen(s.c_str());
         for (int i = 0,j = l; i < l/2; i += 2, j-=2) 
         {   
