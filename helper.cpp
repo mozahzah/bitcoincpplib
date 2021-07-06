@@ -10,8 +10,6 @@
 #ifndef HELPER_CPP
 #define HELPER_CPP
 
-
-
 namespace HashLib
 {   
     std::string Hash256(std::string hex)
@@ -97,7 +95,6 @@ namespace HashLib
     std::string encode_varint(CryptoPP::Integer n)
     {
         __uint128_t i = n.ConvertToLong();
-
         if ( i < 0xfd)
         {
             std::stringstream stream;

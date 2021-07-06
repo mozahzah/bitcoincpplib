@@ -24,7 +24,7 @@ int main ()
     //std::string passphrase = "mazeebitcoin@gmail.commzmzmzmzmzmzm";
     //std::cout << HashLib::Hash256(passphrase);
 
-    ECC::PrivateKey Priv = ECC::PrivateKey(123);
+    ECC::PrivateKey Priv = ECC::PrivateKey(16749689);
     std::string prev_tx = "2813e203b6720dea3caff9983a5a0ca5e0a24bb73ccb93a8a6974b7e9a5e2a36";
     int prev_index = 1;
     
