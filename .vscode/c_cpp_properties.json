@@ -5,7 +5,8 @@
             "includePath": [
                 "${default}",
                 "${workspaceFolder}",
-                "C:/msys64/mingw64/include/cryptopp"
+                "C:/msys64/mingw64/include/cryptopp",
+                "C:/msys64/mingw64/include/curl"
             ],
             "intelliSenseMode": "windows-gcc-x86",
             "cStandard": "c17",
@@ -15,7 +16,8 @@
                 "path": [
                     "${default}",
                     "${workspaceFolder}",
-                    "C:/msys64/mingw64/include/cryptopp"
+                    "C:/msys64/mingw64/include/cryptopp",
+                    "C:/msys64/mingw64/include/curl"
                 ]
             }
         }

@@ -5,17 +5,18 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include "curl.h"
 
 
 #ifndef HELPER_CPP
 #define HELPER_CPP
 
-namespace HashLib
+namespace Helper
 {   
     std::string Hash256(std::string hex)
     {   
         hex = hex + "h";
-        Integer i = Integer(hex.c_str()); 
+        CryptoPP::Integer i = CryptoPP::Integer(hex.c_str()); 
         CryptoPP::byte b[i.MinEncodedSize()];
         i.Encode(b, i.MinEncodedSize());
 
@@ -30,7 +31,6 @@ namespace HashLib
         CryptoPP::HexEncoder encoder(new CryptoPP::StringSink(hashString));
         encoder.Put(hash2, sizeof(hash2));
         encoder.MessageEnd();
-        std::cout << "Hash to sign: " << hashString << std::endl;
         return hashString;
     }
 
@@ -80,6 +80,8 @@ namespace HashLib
         return s;
     }
 
+    //std::string little_endian_to_big_endian(std::string )
+
     std::string int_to_big_endian(CryptoPP::Integer n, int byte_size)
     {
         if (byte_size % 2 != 0 || byte_size > 32) throw std::invalid_argument("Byte size Error");
@@ -126,6 +128,76 @@ namespace HashLib
         {
             throw std::invalid_argument("Number too big Error");
         } 
+    }
+
+    std::string Extract(std::string& s, int i)
+    {
+        std::string ss;
+        for (int j = 0; j < i*2; j++)
+        {   
+            ss += s.at(j);
+        }
+        s.erase(0,i*2);
+        return ss;
+    }
+
+    Integer little_endian_to_int(std::string s)
+    {
+        std::string sh = s + 'h';
+        return Integer(sh.c_str(), LITTLE_ENDIAN_ORDER);
+    }
+
+    Integer read_varint(std::string s)
+    {
+        if (s == "fd")
+        {
+            return little_endian_to_int(Extract(s,2));
+        }
+        if (s == "fe")
+        {
+            return little_endian_to_int(Extract(s,4));
+        }
+        if (s == "ff")
+        {
+            return little_endian_to_int(Extract(s,8));
+        }
+        else 
+        {
+            std::string ss = s + 'h';
+            Integer i = Integer(ss.c_str(), BIG_ENDIAN_ORDER);
+            return i;
+        }
+    }
+
+    static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp)
+    {
+        ((std::string*)userp)->append((char*)contents, size * nmemb);
+        return size * nmemb;
+    }
+
+    std::string TxFetcher(std::string prev_tx_hex)
+    {
+        CURL* curl;
+        CURLcode res;
+        std::string readBuffer;
+
+        curl = curl_easy_init();
+        if(curl) 
+        {
+            std::string url = "https://blockstream.info/testnet/api/tx/%s/hex";
+            url.replace(40, 2, prev_tx_hex);
+            
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+            res = curl_easy_perform(curl);
+            curl_easy_cleanup(curl);
+           return readBuffer;
+        }
+        else 
+        {
+            throw std::invalid_argument("Invalid URL");
+        }
     }
 }
     

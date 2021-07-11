@@ -8,11 +8,11 @@
                 "-g",
                 "${file}",
                 "-IC:/msys64/mingw64/include/cryptopp",
+                "-IC:/msys64/mingw64/include/curl",
                 "-LC:/msys64/mingw64/lib",
                 "-lcryptopp",
-                "-lcryptopp.dll",
                 "-lcrypto",
-                "-lcrypto.dll",
+                "-lcurl",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],

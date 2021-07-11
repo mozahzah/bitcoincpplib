@@ -11,6 +11,7 @@ class Script
     Script(std::vector<std::string> commands);
 
     std::string Serialize();
+    Script static Parse(std::string& s);
     std::vector<std::string> commands;
 
     bool Evaluate(std::string hash);

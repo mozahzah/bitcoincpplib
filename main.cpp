@@ -1,10 +1,8 @@
 #include "ecc.cpp"
 #include "tx.cpp"
-
-
+//#include "helper.cpp"
 
 using namespace std;
-        
 
 int main ()
 {
@@ -21,8 +19,8 @@ int main ()
     // cout << boolalpha;
     // cout << b << endl;
 
-    //std::string passphrase = "mazeebitcoin@gmail.commzmzmzmzmzmzm";
-    //std::cout << HashLib::Hash256(passphrase);
+    // std::string passphrase = "mazeebitcoin@gmail.commzmzmzmzmzmzm";
+    // std::cout << Helper::Hash256(passphrase);
 
     ECC::PrivateKey Priv = ECC::PrivateKey(16749689);
     std::string prev_tx = "2813e203b6720dea3caff9983a5a0ca5e0a24bb73ccb93a8a6974b7e9a5e2a36";
@@ -34,17 +32,16 @@ int main ()
     Txout tx_out = Txout(5, p2bkh.P2BKH("ad346f8eb57dee9a37981716e498120ae80e44f7"));
     std::vector<Txout> txouts {tx_out};
 
-    Tx txObj = Tx(1, txins,txouts,0,true);
+    //Tx txObj = Tx(1, txins,txouts,0,true);
 
-    Tx tx = Tx(1, txins, txouts, 0, false);
-
+    Tx tx = Tx(1, txins, txouts, 0, true);
     //Priv.Sign(123).Der();
-    tx.SignInput(0,Priv, p2bkh.P2BKH("fbb48feaea1944cd5498d012a6a72890f88604e5"));
-    cout << tx.Serialize();
+    tx.SignInput(0,Priv);
 
-
-
-
-
+    //std::cout << Helper::TxFetcher("2813e203b6720dea3caff9983a5a0ca5e0a24bb73ccb93a8a6974b7e9a5e2a36");
+   
+    //auto new_tx = Tx::Parse(tx.Serialize());
+    //std::cout << new_tx.Serialize() << std::endl;
+    std::cout << tx.Serialize();
     return 0;
 }

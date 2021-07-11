@@ -30,24 +30,24 @@ std::string Script::Serialize()
         if (cmd.size() < 4) 
         {   
             std::stoi(cmd);
-            result += HashLib::int_to_little_endian(cmd, 1);
+            result += Helper::int_to_little_endian(cmd, 1);
         }
         else 
         {   
             int length = cmd.size()/2;
             if (length < 75)
             {
-                result += HashLib::int_to_little_endian(length, 1);
+                result += Helper::int_to_little_endian(length, 1);
             }  
             else if (length > 75 and length < 0x100)
             {
-                result += HashLib::int_to_little_endian(76, 1);
-                result += HashLib::int_to_little_endian(length, 1);
+                result += Helper::int_to_little_endian(76, 1);
+                result += Helper::int_to_little_endian(length, 1);
             }
             else if (length >= 0x100 and length <= 520)
             {
-                result += HashLib::int_to_little_endian(77, 1);
-                result += HashLib::int_to_little_endian(length, 2);
+                result += Helper::int_to_little_endian(77, 1);
+                result += Helper::int_to_little_endian(length, 2);
             }
             else
             {
@@ -57,6 +57,42 @@ std::string Script::Serialize()
         } 
     }
     int64_t size = result.size()/2;
-    std::string final_result = HashLib::encode_varint(size) + result;
+    std::string final_result = Helper::encode_varint(size) + result;
     return final_result;
+}
+
+Script Script::Parse(std::string& s)
+{
+    int lenght = Helper::read_varint(Helper::Extract(s,1)).ConvertToLong();
+    std::vector<std::string> commands;
+    int i = 0;
+    while( i < lenght)
+    {
+        std::string current = Helper::Extract(s,1);
+        i += 1;
+        std::string current_hex = current + 'h';
+        int current_byte = Integer(current_hex.c_str()).ConvertToLong();
+        if (current_byte >= 1 && current_byte <= 75)
+        {
+            commands.push_back(Helper::Extract(s, current_byte));
+            i += current_byte;
+        }
+        else if (current_byte == 76)
+        {
+            int data_lenght = Helper::little_endian_to_int(Helper::Extract(s,1)).ConvertToLong();
+            commands.push_back(Helper::Extract(s, data_lenght));
+            i += data_lenght + 1;
+        }
+        else if (current_byte == 77)
+        {
+            int data_lenght = Helper::little_endian_to_int(Helper::Extract(s,2)).ConvertToLong();
+            commands.push_back(Helper::Extract(s, data_lenght));
+            i += data_lenght + 2;
+        }
+        else
+        {
+            commands.push_back(std::to_string(current_byte));
+        }
+    }
+    return Script(commands);
 }
