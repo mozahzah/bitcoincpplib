@@ -71,7 +71,7 @@ Script Script::Parse(std::string& s)
         std::string current = Helper::Extract(s,1);
         i += 1;
         std::string current_hex = current + 'h';
-        int current_byte = Integer(current_hex.c_str()).ConvertToLong();
+        int current_byte = CryptoPP::Integer(current_hex.c_str()).ConvertToLong();
         if (current_byte >= 1 && current_byte <= 75)
         {
             commands.push_back(Helper::Extract(s, current_byte));

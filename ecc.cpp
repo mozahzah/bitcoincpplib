@@ -84,7 +84,7 @@ S256FieldElement S256FieldElement::operator*(const Integer coeff) const
     return S256FieldElement(num, this->prime);
 }
 
-/*--------------------S256PointS--------------------*/
+/*--------------------S256Point--------------------*/
 
 S256Point::S256Point(S256FieldElement x, S256FieldElement y, S256FieldElement a, S256FieldElement b)
 {
@@ -191,9 +191,9 @@ Signature::Signature(Integer r, Integer s)
     this->s = s;
 }
 
-Signature Parse(std::string der_signature){
-   
-    return Signature(1,1);
+Signature Parse(std::string der_signature)
+{
+    return Signature(1,1); //TODO
 }
 
 Signature ECC::PrivateKey::Sign(Integer z)

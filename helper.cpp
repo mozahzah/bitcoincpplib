@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include "curl.h"
+
 
 
 #ifndef HELPER_CPP
@@ -13,17 +13,24 @@
 
 namespace Helper
 {   
-    std::string Hash256(std::string hex)
+    std::string Hash256(std::string s, bool isPassPhrase)
     {   
-        hex = hex + "h";
-        CryptoPP::Integer i = CryptoPP::Integer(hex.c_str()); 
-        CryptoPP::byte b[i.MinEncodedSize()];
-        i.Encode(b, i.MinEncodedSize());
-
         CryptoPP::SHA256 hasher;
         CryptoPP::byte hash1[CryptoPP::SHA256::DIGESTSIZE];
-        hasher.CalculateDigest(hash1, b, i.MinEncodedSize());
-    
+        
+        if (isPassPhrase)
+        {
+            CryptoPP::byte* b = (CryptoPP::byte*)s.data();
+            hasher.CalculateDigest(hash1, b, s.size());
+        }
+        else
+        {
+            s = s + "h";
+            CryptoPP::Integer i = CryptoPP::Integer(s.c_str()); 
+            CryptoPP::byte b[i.MinEncodedSize()];
+            i.Encode(b, i.MinEncodedSize());
+            hasher.CalculateDigest(hash1, b, i.MinEncodedSize());
+        }
         CryptoPP::byte hash2[CryptoPP::SHA256::DIGESTSIZE];
         hasher.CalculateDigest(hash2, hash1, 32);
 
@@ -169,36 +176,9 @@ namespace Helper
         }
     }
 
-    static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp)
-    {
-        ((std::string*)userp)->append((char*)contents, size * nmemb);
-        return size * nmemb;
-    }
+    
 
-    std::string TxFetcher(std::string prev_tx_hex)
-    {
-        CURL* curl;
-        CURLcode res;
-        std::string readBuffer;
-
-        curl = curl_easy_init();
-        if(curl) 
-        {
-            std::string url = "https://blockstream.info/testnet/api/tx/%s/hex";
-            url.replace(40, 2, prev_tx_hex);
-            
-            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-            res = curl_easy_perform(curl);
-            curl_easy_cleanup(curl);
-           return readBuffer;
-        }
-        else 
-        {
-            throw std::invalid_argument("Invalid URL");
-        }
-    }
+    
 }
     
 #endif

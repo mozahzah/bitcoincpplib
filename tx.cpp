@@ -1,10 +1,13 @@
 #include "tx.h"
+#include "curl.h"
 
-Txout::Txout(){
+Txout::Txout()
+{
 
 }
 
-Txin::Txin(){
+Txin::Txin()
+{
     
 }
 
@@ -55,24 +58,62 @@ Tx Tx::Parse(std::string s, bool testnet)
     return Tx(0, txins,txouts,0,false);
 }
 
+static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp)
+{
+        ((std::string*)userp)->append((char*)contents, size * nmemb);
+        return size * nmemb;
+}
+
+Tx TxFetcher(std::string prev_tx_hex)
+{
+        CURL* curl;
+        CURLcode res;
+        std::string readBuffer;
+
+        curl = curl_easy_init();
+        if(curl) 
+        {
+            std::string url = "https://blockstream.info/testnet/api/tx/%s/hex";
+            url.replace(40, 2, prev_tx_hex);
+     
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+            res = curl_easy_perform(curl);
+            curl_easy_cleanup(curl);
+            if (readBuffer[9]== '0')
+            {
+               readBuffer.erase(9,4);
+               auto tx = Tx::Parse(readBuffer);
+               tx.locktime = Helper::little_endian_to_int(readBuffer.substr(readBuffer.length() - 8));
+               return tx;
+            }
+            return Tx::Parse(readBuffer);
+        }
+        else 
+        {
+            throw std::invalid_argument("Invalid URL");
+        }
+}
+
 Txin::Txin(std::string prev_tx, int prev_index, Script script_sig, Integer sequence)
 {
     this->prev_tx = prev_tx;
     this->prev_index = prev_index;
     this->script_sig = script_sig;
-    if (sequence == -1){
+    if (sequence == -1)
+    {
         this->sequence = Integer("ffffffffh");
     }
-    else{
+    else
+    {
         this->sequence = sequence;
     }
-    
 }
 
 Script Txin::GetPreviousScriptPubKey()
 {
-    std::cout << Helper::TxFetcher(this->prev_tx);
-    Tx prev = Tx::Parse(Helper::TxFetcher(this->prev_tx));
+    Tx prev = TxFetcher(this->prev_tx);
     return prev.tx_outs[this->prev_index].script_pub_key;
 }
 
@@ -130,6 +171,7 @@ bool Tx::SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key)
 
 Integer Tx::HashToSign(uint64_t Input_Index)
 {
+    Script p2bkh = Script();
     std::string result;
     result += Helper::int_to_little_endian(this->version, 4);
     result += Helper::encode_varint(this->tx_ins.size());
@@ -139,7 +181,8 @@ Integer Tx::HashToSign(uint64_t Input_Index)
         {
             auto current_tx_in = tx_ins.at(i);
             result += Txin(this->tx_ins[i].prev_tx, this->tx_ins[i].prev_index, 
-            current_tx_in.GetPreviousScriptPubKey(), this->tx_ins[i].sequence).Serialize();
+            /*p2bkh.P2BKH("fbb48feaea1944cd5498d012a6a72890f88604e5")*/current_tx_in.GetPreviousScriptPubKey(), 
+            this->tx_ins[i].sequence).Serialize();
         }
         else 
         {
@@ -152,7 +195,7 @@ Integer Tx::HashToSign(uint64_t Input_Index)
     }
     result += Helper::int_to_little_endian(this->locktime,4);
     result += Helper::int_to_little_endian(1, 4);
-    std::string h256 = Helper::Hash256(result) + 'h';
+    std::string h256 = Helper::Hash256(result, false) + 'h';
     return Integer(h256.c_str());
 }
 
@@ -190,7 +233,8 @@ std::string Txout::Serialize()
     return result.c_str();
 }
 
-Txout Txout::Parse(std::string& s){
+Txout Txout::Parse(std::string& s)
+{
     int amount = Helper::little_endian_to_int(Helper::Extract(s,8)).ConvertToLong();
     Script script_pubkey = Script::Parse(s);
     return Txout(amount, script_pubkey);
