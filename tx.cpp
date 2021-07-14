@@ -163,7 +163,7 @@ bool Tx::SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key)
     Integer z = this->HashToSign(Input_Index);
     auto der = Private_Key.Sign(z).Der();
     der += "01";
-    auto pub_key = Private_Key.publicPoint.Sec();
+    auto pub_key = Private_Key.publicPoint.Sec(false);
     auto script_sig = Script({der, pub_key});
     this->tx_ins[Input_Index].script_sig = script_sig;
     return true;

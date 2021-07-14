@@ -177,12 +177,38 @@ bool S256Point::Verify(Integer z, Signature sig)
     return total.x.num == sig.r;
 }
 
-std::string S256Point::Sec()
+std::string S256Point::Sec(bool compressed)
 {
     std::string result;
-    result = "04" + Helper::int_to_big_endian(this->x.num, 32);
-    result += Helper::int_to_big_endian(this->y.num, 32);
+    if (compressed)
+    {
+        if (this->y.num % 2 == 0)
+        {
+            result = "02" + Helper::int_to_big_endian(this->x.num, 32);
+        }
+        else
+        {
+            result = "03" + Helper::int_to_big_endian(this->x.num, 32);
+        }
+    }
+    else
+    {
+        result = "04" + Helper::int_to_big_endian(this->x.num, 32);
+        result += Helper::int_to_big_endian(this->y.num, 32);
+    }
     return result;
+}
+
+std::string S256Point::Address(bool compressed, bool testnet)
+{
+    auto h160 = Helper::Hash160(this->Sec(compressed));
+    if (testnet){
+        h160 = "6f" + h160;
+    }
+    else{
+        h160 = "00" + h160;
+    }
+    return Helper::Encode_Base_58_Checksum(h160);
 }
 
 Signature::Signature(Integer r, Integer s)

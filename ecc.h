@@ -88,7 +88,8 @@ namespace ECC
 
             static S256Point Parse(std::string sec_pubkey);
             bool Verify(Integer z, Signature sig);
-            std::string Sec();
+            std::string Sec(bool compressed);
+            std::string Address(bool compressed, bool testnet);
     };
 
     S256Point G = S256Point(GX,GY,A,B);
