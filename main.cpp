@@ -9,20 +9,17 @@ int main ()
     std::string passphrase = "mazeebitcoin@gmail.commzmzmzmzmzmzm";
     auto secret = Helper::little_endian_to_int(Helper::Hash256(passphrase, true));
     ECC::PrivateKey Priv = ECC::PrivateKey(secret);
-    std::string prev_tx = "ce4f1799f145a1f1c1de6ab1f63cf780f9a2ce77c39522406c18bd74fd9481b8";
+    std::string prev_tx = "4b735347e842e315ba7b5f7c1b1afc69e599ec28d6e80ba181e03987259df1b2";
     int prev_index = 0;
-    //std::cout << Priv.publicPoint.Address(false, true) << std::endl;
     Txin tx_in = Txin(prev_tx, prev_index, Script(), Integer("0xffffffff"));
     std::vector<Txin> txins {tx_in};
     Script p2bkh = Script();
-    Txout tx_out = Txout(457000, p2bkh.P2BKH("fbb48feaea1944cd5498d012a6a72890f88604e5"));
+    Txout tx_out = Txout(454000, p2bkh.P2BKH(Helper::Decode_Base_58("n4TrCtCVPQaorW2WdHvJfH2bWh3RvL1StM")));
     std::vector<Txout> txouts {tx_out};
-
     Tx tx = Tx(1, txins, txouts, 0, true);
-    tx.SignInput(0,Priv);
-    std::cout <<  Helper::Decode_Base_58("n4TrCtCVPQaorW2WdHvJfH2bWh3RvL1StM");
-    //std::cout << tx.Serialize();
+    tx.SignInput(prev_index, Priv, false);
+    std::cout << tx.Serialize();
     //Tx::Parse(tx.Serialize());
-    //std::cout << Helper::Hash160("7b");
+
     return 0;
 }

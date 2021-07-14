@@ -49,7 +49,7 @@ namespace Helper
         CryptoPP::byte hash1[CryptoPP::SHA256::DIGESTSIZE];
         s = s + "h";
         CryptoPP::Integer i = CryptoPP::Integer(s.c_str()); 
-        CryptoPP::byte b[i.MinEncodedSize()]; //i.MinEncodedSize() TODO
+        CryptoPP::byte b[i.MinEncodedSize()];
         i.Encode(b, i.MinEncodedSize());
         hasher.CalculateDigest(hash1, b, i.MinEncodedSize());
         
@@ -81,7 +81,6 @@ namespace Helper
         }
         std::string prefix = std::string(c, '1');
         std::string result;
-        std::cout << i;
         while (i > 0)
         {
             Integer mod = i % 58;
@@ -90,8 +89,6 @@ namespace Helper
         }
         return prefix + result;
     }
-
-    
 
     std::string Encode_Base_58_Checksum(std::string s)
     {
@@ -167,40 +164,37 @@ namespace Helper
         }
         std::string result = int_to_big_endian(num,25);
         std::string checksum = result.substr(result.length() - 8);
-        if (Hash256(result.substr(0, result.length() -8), false).substr(0, 8) != checksum)
+        if (Hash256(result.substr(0, result.length() - 8), false).substr(0, 8) != checksum)
         {
             throw std::invalid_argument("Bad Address");
         }
-        return result.substr(1,result.length() - 9);
+        return result.substr(2,result.length() - 10);
     }
 
     std::string encode_varint(CryptoPP::Integer n)
     {
         __uint128_t i = n.ConvertToLong();
+        std::stringstream stream;
         if ( i < 0xfd)
         {
-            std::stringstream stream;
             stream << int_to_little_endian(i,1);
             return stream.str();
         }
 
         else if (i < 0x10000)
         {
-            std::stringstream stream;
             stream << "fd" << int_to_little_endian(i,2);
             return stream.str();
         }
 
         else if (i < 0x100000000)
         {
-            std::stringstream stream;
             stream << "fe" << int_to_little_endian(i,4); 
             return stream.str();
         }
 
         else if (i < 0x1000000000000000)
         {
-            std::stringstream stream;
             stream << "ff" << int_to_little_endian(i,8); 
             return stream.str();
         }
@@ -248,10 +242,6 @@ namespace Helper
             return i;
         }
     }
-
-    
-
-    
 }
     
 #endif

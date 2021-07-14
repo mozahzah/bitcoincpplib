@@ -158,12 +158,12 @@ Txin Txin::Parse(std::string& s)
     return Txin(prev_tx, prev_index, script_sig, sequence);
 }
 
-bool Tx::SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key)
+bool Tx::SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key, bool Compressed)
 {
     Integer z = this->HashToSign(Input_Index);
     auto der = Private_Key.Sign(z).Der();
     der += "01";
-    auto pub_key = Private_Key.publicPoint.Sec(false);
+    auto pub_key = Private_Key.publicPoint.Sec(Compressed);
     auto script_sig = Script({der, pub_key});
     this->tx_ins[Input_Index].script_sig = script_sig;
     return true;
@@ -181,7 +181,7 @@ Integer Tx::HashToSign(uint64_t Input_Index)
         {
             auto current_tx_in = tx_ins.at(i);
             result += Txin(this->tx_ins[i].prev_tx, this->tx_ins[i].prev_index, 
-            /*p2bkh.P2BKH("fbb48feaea1944cd5498d012a6a72890f88604e5")*/current_tx_in.GetPreviousScriptPubKey(), 
+            current_tx_in.GetPreviousScriptPubKey(), 
             this->tx_ins[i].sequence).Serialize();
         }
         else 
@@ -190,7 +190,8 @@ Integer Tx::HashToSign(uint64_t Input_Index)
         }
     }
     result += Helper::encode_varint(this->tx_outs.size());
-    for (int i = 0; i < this->tx_outs.size(); i++){
+    for (int i = 0; i < this->tx_outs.size(); i++)
+    {
         result += tx_outs[i].Serialize();
     }
     result += Helper::int_to_little_endian(this->locktime,4);

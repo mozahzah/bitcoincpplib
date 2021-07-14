@@ -34,6 +34,7 @@ std::string Script::Serialize()
         }
         else 
         {   
+            int i = cmd.size();
             int length = cmd.size()/2;
             if (length < 75)
             {

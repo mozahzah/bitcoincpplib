@@ -52,7 +52,7 @@ class Tx
 
         Tx static Parse(std::string s);
         Integer HashToSign(uint64_t Input_Index);
-        bool SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key);
+        bool SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key, bool Compressed);
         bool VerifyInput(uint64_t Input_Index);
 
         std::string TxHash();

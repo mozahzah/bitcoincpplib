@@ -2,7 +2,9 @@
 #include<cmath>
 #include <string>
 
+
 #include "cryptlib.h"
+
 #include "integer.h"
 #include "gfpcrypt.h"
 #include "sha.h"
@@ -10,7 +12,6 @@
 #ifndef ECC_CPP
 #define ECC_CPP
 
-//using namespace boost::multiprecision;
 using namespace CryptoPP;
 
 Integer A = 0;
