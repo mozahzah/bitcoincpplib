@@ -1,22 +1,20 @@
 #include <vector>
 #include <string>
-#include "cryptlib.h"
 #include "ecc.h"
 #include "script.cpp"
 #include "helper.cpp"
 
-using namespace CryptoPP;
-
+using namespace boost::multiprecision;
 class Txin
 {
     public:
         Txin();
-        Txin(std::string prev_tx, int prev_index, Script script_sig, Integer sequence);
+        Txin(std::string prev_tx, int prev_index, Script script_sig, cpp_int sequence);
 
         std::string prev_tx;
         int prev_index;
         Script script_sig;
-        Integer sequence;
+        cpp_int sequence;
 
         std::string Serialize();
         Script GetPreviousScriptPubKey();
@@ -39,19 +37,19 @@ class Txout
 class Tx
 {
     public:
-        Integer version;
+        cpp_int version;
         std::vector<Txin> tx_ins;
         std::vector<Txout> tx_outs;
-        Integer locktime;
+        cpp_int locktime;
         bool testnet;
 
 
     public:
-        Tx(Integer version, std::vector<Txin> tx_ins,std::vector<Txout> tx_outs,Integer locktime, bool testnet);
-        Integer TxId();
+        Tx(cpp_int version, std::vector<Txin> tx_ins,std::vector<Txout> tx_outs,cpp_int locktime, bool testnet);
+        cpp_int TxId();
 
         Tx static Parse(std::string s);
-        Integer HashToSign(uint64_t Input_Index);
+        cpp_int HashToSign(uint64_t Input_Index);
         bool SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key, bool Compressed);
         bool VerifyInput(uint64_t Input_Index);
 

@@ -11,7 +11,7 @@ Txin::Txin()
     
 }
 
-Tx::Tx(Integer version, std::vector<Txin> tx_ins,std::vector<Txout> tx_outs,Integer locktime,bool testnet)
+Tx::Tx(cpp_int version, std::vector<Txin> tx_ins,std::vector<Txout> tx_outs,cpp_int locktime,bool testnet)
 {
     this->version = version;
     this->tx_ins = tx_ins;
@@ -20,7 +20,7 @@ Tx::Tx(Integer version, std::vector<Txin> tx_ins,std::vector<Txout> tx_outs,Inte
     this->testnet = testnet;
 }
 
-Integer Tx::TxId()
+cpp_int Tx::TxId()
 {
     //return this->TxHash();
     return 0;
@@ -96,14 +96,14 @@ Tx TxFetcher(std::string prev_tx_hex)
         }
 }
 
-Txin::Txin(std::string prev_tx, int prev_index, Script script_sig, Integer sequence)
+Txin::Txin(std::string prev_tx, int prev_index, Script script_sig, cpp_int sequence)
 {
     this->prev_tx = prev_tx;
     this->prev_index = prev_index;
     this->script_sig = script_sig;
     if (sequence == -1)
     {
-        this->sequence = Integer("ffffffffh");
+        this->sequence = cpp_int("0xffffffff");
     }
     else
     {
@@ -152,15 +152,15 @@ Txin Txin::Parse(std::string& s)
         prev_tx[j-1] = prev_tx[i+1];
         prev_tx[i+1] = temp2;
     }
-    int prev_index = Helper::little_endian_to_int(Helper::Extract(s,4)).ConvertToLong();
+    int prev_index = Helper::little_endian_to_int(Helper::Extract(s,4)).convert_to<int>();
     Script script_sig = Script::Parse(s);
-    int sequence = Helper::little_endian_to_int(Helper::Extract(s,4)).ConvertToLong();
+    int sequence = Helper::little_endian_to_int(Helper::Extract(s,4)).convert_to<int>();
     return Txin(prev_tx, prev_index, script_sig, sequence);
 }
 
 bool Tx::SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key, bool Compressed)
 {
-    Integer z = this->HashToSign(Input_Index);
+    cpp_int z = this->HashToSign(Input_Index);
     auto der = Private_Key.Sign(z).Der();
     der += "01";
     auto pub_key = Private_Key.publicPoint.Sec(Compressed);
@@ -169,7 +169,7 @@ bool Tx::SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key, bool Compr
     return true;
 }
 
-Integer Tx::HashToSign(uint64_t Input_Index)
+cpp_int Tx::HashToSign(uint64_t Input_Index)
 {
     Script p2bkh = Script();
     std::string result;
@@ -196,28 +196,28 @@ Integer Tx::HashToSign(uint64_t Input_Index)
     }
     result += Helper::int_to_little_endian(this->locktime,4);
     result += Helper::int_to_little_endian(1, 4);
-    std::string h256 = Helper::Hash256(result, false) + 'h';
-    return Integer(h256.c_str());
+    std::string h256 = "0x" + Helper::Hash256(result);
+    return cpp_int(h256.c_str());
 }
 
 Tx Tx::Parse(std::string s)
 {
     std::string temp;
-    int version = Helper::little_endian_to_int(Helper::Extract(s,4)).ConvertToLong();
-    int num_inputs = Helper::read_varint(Helper::Extract(s,1)).ConvertToLong();
+    int version = Helper::little_endian_to_int(Helper::Extract(s,4)).convert_to<int>();
+    int num_inputs = Helper::read_varint(Helper::Extract(s,1)).convert_to<int>();
 
     std::vector<Txin> inputs;
     for (int i = 0; i < num_inputs; i++)
     {
         inputs.push_back(Txin::Parse(s));
     }
-    int num_outputs = Helper::read_varint(Helper::Extract(s,1)).ConvertToLong();
+    int num_outputs = Helper::read_varint(Helper::Extract(s,1)).convert_to<int>();
     std::vector<Txout> outputs;
     for (int i = 0; i < num_outputs; i++)
     {
         outputs.push_back(Txout::Parse(s));
     }
-    Integer locktime = Helper::little_endian_to_int(Helper::Extract(s,4));
+    cpp_int locktime = Helper::little_endian_to_int(Helper::Extract(s,4));
     return Tx(version, inputs,outputs,locktime ,true);
 }
 
@@ -236,7 +236,7 @@ std::string Txout::Serialize()
 
 Txout Txout::Parse(std::string& s)
 {
-    int amount = Helper::little_endian_to_int(Helper::Extract(s,8)).ConvertToLong();
+    int amount = Helper::little_endian_to_int(Helper::Extract(s,8)).convert_to<int>();
     Script script_pubkey = Script::Parse(s);
     return Txout(amount, script_pubkey);
 }

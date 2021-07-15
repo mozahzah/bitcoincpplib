@@ -64,7 +64,7 @@ std::string Script::Serialize()
 
 Script Script::Parse(std::string& s)
 {
-    int lenght = Helper::read_varint(Helper::Extract(s,1)).ConvertToLong();
+    int lenght = Helper::read_varint(Helper::Extract(s,1)).convert_to<int>();
     std::vector<std::string> commands;
     int i = 0;
     while( i < lenght)
@@ -72,7 +72,7 @@ Script Script::Parse(std::string& s)
         std::string current = Helper::Extract(s,1);
         i += 1;
         std::string current_hex = current + 'h';
-        int current_byte = CryptoPP::Integer(current_hex.c_str()).ConvertToLong();
+        int current_byte = cpp_int(current_hex.c_str()).convert_to<int>();
         if (current_byte >= 1 && current_byte <= 75)
         {
             commands.push_back(Helper::Extract(s, current_byte));
@@ -80,13 +80,13 @@ Script Script::Parse(std::string& s)
         }
         else if (current_byte == 76)
         {
-            int data_lenght = Helper::little_endian_to_int(Helper::Extract(s,1)).ConvertToLong();
+            int data_lenght = Helper::little_endian_to_int(Helper::Extract(s,1)).convert_to<int>();
             commands.push_back(Helper::Extract(s, data_lenght));
             i += data_lenght + 1;
         }
         else if (current_byte == 77)
         {
-            int data_lenght = Helper::little_endian_to_int(Helper::Extract(s,2)).ConvertToLong();
+            int data_lenght = Helper::little_endian_to_int(Helper::Extract(s,2)).convert_to<int>();
             commands.push_back(Helper::Extract(s, data_lenght));
             i += data_lenght + 2;
         }

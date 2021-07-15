@@ -1,6 +1,6 @@
 #include <vector>
 #include <string>
-#include "cryptlib.h"
+
 
 enum OP_CODES
 {
@@ -55,7 +55,7 @@ class Op
         bool OP_5(std::vector<std::string> stack);
         bool OP_EQUAL (std::vector<std::string> stack);
         bool OP_HASH256(std::vector<std::string> stack);
-        bool OP_CHECKSIG(std::vector<std::string> stack, CryptoPP::Integer z);
+        bool OP_CHECKSIG(std::vector<std::string> stack, cpp_int z);
     
 
 

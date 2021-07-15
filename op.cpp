@@ -38,7 +38,7 @@ bool Op::OP_HASH256(std::vector<std::string> stack)
 {
     
 }
-bool Op::OP_CHECKSIG(std::vector<std::string> stack, CryptoPP::Integer z)
+bool Op::OP_CHECKSIG(std::vector<std::string> stack, cpp_int z)
 {
     if (stack.size() < 2) return false;
     auto sec_pubkey = stack.back();

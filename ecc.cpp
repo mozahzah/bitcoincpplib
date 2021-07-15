@@ -1,14 +1,11 @@
 #include "ecc.h"
 #include "helper.cpp"
-
-#include <rsa.h>
-
-
+//#include <rsa.h>
 
 using namespace ECC;
 /*--------------------FIELD ELEMENTS--------------------*/
 
-S256FieldElement::S256FieldElement(Integer num, Integer prime)
+S256FieldElement::S256FieldElement(cpp_int num, cpp_int prime)
 {
     if (num >= prime || num < 0) throw std::invalid_argument("Num not in Field or Negative or NULL Initialized");
     this->num = num;
@@ -28,11 +25,11 @@ bool S256FieldElement::operator!= (const S256FieldElement& f) const
 {
     return !(*this == f);
 }
-bool S256FieldElement::operator==(const Integer& n) const
+bool S256FieldElement::operator==(const cpp_int& n) const
 {
     return this->num == n;
 }
-bool S256FieldElement::operator!=(const Integer& n) const
+bool S256FieldElement::operator!=(const cpp_int& n) const
 {
     return !(*this == n);
 }
@@ -41,26 +38,26 @@ bool S256FieldElement::operator!=(const Integer& n) const
 S256FieldElement S256FieldElement::operator+(const S256FieldElement& f) const
 {
     if (this->prime != f.prime) throw std::invalid_argument("Cannot add Two Number in Different Fields");
-    Integer num = (this->num + f.num) % this->prime;
+    cpp_int num = (this->num + f.num) % this->prime;
     return S256FieldElement(num, this->prime);
 }
 S256FieldElement S256FieldElement::operator-(const S256FieldElement& f) const
 {
     if (this->prime != f.prime) throw std::invalid_argument("Cannot subtract Two Number in Different Fields");
-    Integer num = ((this->num - f.num) + this->prime) % this->prime; // c++ modulos needs to be positive at all time
+    cpp_int num = ((this->num - f.num) + this->prime) % this->prime; // c++ modulos needs to be positive at all time
     return S256FieldElement(num, this->prime);
 }
 S256FieldElement S256FieldElement::operator*(const S256FieldElement& f) const
 {
     if (this->prime != f.prime) throw std::invalid_argument("Cannot multiply Two Number in Different Fields");
-    Integer num = this->num * f.num % this->prime;
+    cpp_int num = this->num * f.num % this->prime;
     return S256FieldElement(num, this->prime);
 }
-S256FieldElement S256FieldElement::pow(const Integer exponent) const
+S256FieldElement S256FieldElement::pow(const cpp_int exponent) const
 { 
-    Integer n = exponent % (this->prime - 1);
+    cpp_int n = exponent % (this->prime - 1);
    // ModularArithmetic ma(this->prime);
-    Integer num = a_exp_b_mod_c(this->num, n, this->prime);//ma.Exponentiate(this->num,n);
+    cpp_int num = powm(this->num, n, this->prime);//ma.Exponentiate(this->num,n);
     if (num < 0)
     {
         num = num + this->prime;
@@ -71,21 +68,26 @@ S256FieldElement S256FieldElement::operator/(const S256FieldElement& f) const
 {
     if (this->prime != f.prime) throw std::invalid_argument("Cannot divide Two Number in Different Fields");
     //ModularArithmetic ma(this->prime);
-    Integer i = a_exp_b_mod_c(f.num, (this->prime - 2), this->prime);
+    cpp_int i = powm(f.num, (this->prime - 2), this->prime);
     if (i < 0)
     {
         i = i + this->prime;
     }
-    Integer num = (this->num * i) % this->prime;  
+    cpp_int num = (this->num * i) % this->prime;  
     return S256FieldElement(num, this->prime);
 }
-S256FieldElement S256FieldElement::operator*(const Integer coeff) const
+S256FieldElement S256FieldElement::operator*(const cpp_int coeff) const
 {
-    Integer num = (this->num * coeff) % this->prime;
+    cpp_int num = (this->num * coeff) % this->prime;
     return S256FieldElement(num, this->prime);
 }
 
 /*--------------------S256Point--------------------*/
+
+S256Point::S256Point()
+{
+
+}
 
 S256Point::S256Point(S256FieldElement x, S256FieldElement y, S256FieldElement a, S256FieldElement b)
 {
@@ -94,8 +96,8 @@ S256Point::S256Point(S256FieldElement x, S256FieldElement y, S256FieldElement a,
     this->a = a;
     this->b = b;
     if (this->x == 0 || this->y == 0 || this->a == 0 || this->b == 0) return;
-    S256FieldElement y2 = this->y.pow(2);
-    S256FieldElement x3 = this->x.pow(3) + this->a * this->x + this->b;
+    ECC::S256FieldElement y2 = this->y.pow(2);
+    ECC::S256FieldElement x3 = this->x.pow(3) + this->a * this->x + this->b;
     if (y2 != x3)
     {
         throw std::invalid_argument("S256Point is not on curve");
@@ -147,9 +149,9 @@ S256Point S256Point::operator+(const S256Point& p)
         throw std::invalid_argument("something went wrong");
     }
 }
-S256Point S256Point::operator*(const Integer coeff){
+S256Point S256Point::operator*(const cpp_int coeff){
     
-    Integer c = coeff % N; // = coeff % Integer(N);
+    cpp_int c = coeff % N; // = coeff % cpp_int(N);
     S256Point current = *this; 
     S256Point res = S256Point(S256FieldElement(0),S256FieldElement(0), this->a, this->b);
     while (c > 0)
@@ -169,11 +171,11 @@ S256Point S256Point::Parse(std::string sec_pubkey)
     return S256Point(0,0,A,B);
 }
 
-bool S256Point::Verify(Integer z, Signature sig)
+bool S256Point::Verify(cpp_int z, Signature sig)
 {
-    Integer s_inv = a_exp_b_mod_c(sig.s, N-2, N);
-    Integer u = z * s_inv % N;
-    Integer v = sig.r * s_inv % N;
+    cpp_int s_inv = powm(sig.s, N-2, N);
+    cpp_int u = z * s_inv % N;
+    cpp_int v = sig.r * s_inv % N;
     S256Point total = G * u + *this * v;
     return total.x.num == sig.r;
 }
@@ -212,7 +214,7 @@ std::string S256Point::Address(bool compressed, bool testnet)
     return Helper::Encode_Base_58_Checksum(h160);
 }
 
-Signature::Signature(Integer r, Integer s)
+Signature::Signature(cpp_int r, cpp_int s)
 {
     this->r = r;
     this->s = s;
@@ -223,18 +225,18 @@ Signature Parse(std::string der_signature)
     return Signature(1,1); //TODO
 }
 
-Signature ECC::PrivateKey::Sign(Integer z)
+Signature ECC::PrivateKey::Sign(cpp_int z)
 {
-    DL_Algorithm_DSA_RFC6979<std::string, SHA256> d;
-    Integer k = d.GenerateRandom(this->secret, N, z);
-    Integer r = (G * k).x.num;
-    Integer k_inv = a_exp_b_mod_c(k, N-2, N);
-    Integer s = (z + r * this->secret) * k_inv % N;
+    //DL_Algorithm_DSA_RFC6979<std::string, SHA256> d;
+    cpp_int k = 123;//d.GenerateRandom(this->secret, N, z);
+    cpp_int r = (G * k).x.num;
+    cpp_int k_inv = powm(k, N-2, N);
+    cpp_int s = (z + r * this->secret) * k_inv % N;
     if (s > N/2){s = N - s;}
     return Signature(r, s);
 }
 
-ECC::PrivateKey::PrivateKey(Integer secret)
+ECC::PrivateKey::PrivateKey(cpp_int secret)
 {
     this->secret = secret;
     this->publicPoint = G * secret;
@@ -261,7 +263,7 @@ std::string ECC::Signature::Der()
     firstbyte.push_back(rbin[1]);
     firstbyte.push_back('h');
 
-    if (Integer(firstbyte.c_str()) > 0x80)
+    if (cpp_int(firstbyte.c_str()) > 0x80)
     {
         rbin = "00" + rbin;
     }
@@ -284,7 +286,7 @@ std::string ECC::Signature::Der()
     firstbyte.push_back(sbin[1]);
     firstbyte.push_back('h');
 
-    if (Integer(firstbyte.c_str()) > 0x80)
+    if (cpp_int(firstbyte.c_str()) > 0x80)
     {
         sbin = "00" + sbin;   
     }

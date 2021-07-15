@@ -5,7 +5,9 @@
             "includePath": [
                 "${default}",
                 "${workspaceFolder}",
-                "C:/msys64/mingw64/include/cryptopp",
+                "C:/msys64/mingw64/include/boost",
+                "C:/msys64/mingw64/include/openssl",
+                //"C:/msys64/mingw64/include/cryptopp",
                 "C:/msys64/mingw64/include/curl"
             ],
             "intelliSenseMode": "windows-gcc-x86",
