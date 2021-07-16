@@ -165,6 +165,7 @@ bool Tx::SignInput(uint64_t Input_Index, ECC::PrivateKey Private_Key, bool Compr
     der += "01";
     auto pub_key = Private_Key.publicPoint.Sec(Compressed);
     auto script_sig = Script({der, pub_key});
+    std::cout << "DER " << der << std::endl;
     this->tx_ins[Input_Index].script_sig = script_sig;
     return true;
 }
@@ -196,8 +197,8 @@ cpp_int Tx::HashToSign(uint64_t Input_Index)
     }
     result += Helper::int_to_little_endian(this->locktime,4);
     result += Helper::int_to_little_endian(1, 4);
-    std::string h256 = "0x" + Helper::Hash256(result);
-    return cpp_int(h256.c_str());
+    std::string h256 = "0x" + Helper::Hash256(result, false);
+    return cpp_int(h256);
 }
 
 Tx Tx::Parse(std::string s)

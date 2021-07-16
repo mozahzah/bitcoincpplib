@@ -6,6 +6,8 @@
 //#include "gfpcrypt.h"
 //#include "sha.h"
 #include "boost/multiprecision/cpp_int.hpp"
+#include "openssl/ecdsa.h"
+
 
 #ifndef ECC_CPP
 #define ECC_CPP

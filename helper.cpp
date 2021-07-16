@@ -16,21 +16,32 @@ std::string BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopq
 
 namespace Helper
 {   
-    std::string Hash256(std::string s)
+    std::string Hash256(std::string s, bool is_string)
     {   
-        cpp_int i("0x"+ s);
         char outputBuffer[65];
-        unsigned char bytes[s.length()/2];
-        export_bits(i, bytes, 8);
         std::string result;
         unsigned char hash[SHA256_DIGEST_LENGTH];
+        if (is_string)
+        {
+            SHA256_CTX sha256;
+            SHA256_Init(&sha256);
+            SHA256_Update(&sha256, s.data(), s.length());
+            SHA256_Final(hash, &sha256);
+        }
+        else
+        {
+            cpp_int i("0x"+ s);
+            unsigned char bytes[s.length()/2];
+            export_bits(i, bytes, 8);
+            SHA256_CTX sha256;
+            SHA256_Init(&sha256);
+            SHA256_Update(&sha256, bytes, sizeof(bytes));
+            SHA256_Final(hash, &sha256);
+        }
+        
         unsigned char hash2[SHA256_DIGEST_LENGTH];
-        SHA256_CTX sha256;
-        SHA256_Init(&sha256);
         SHA256_CTX sha256_2;
         SHA256_Init(&sha256_2);
-        SHA256_Update(&sha256, bytes, sizeof(bytes));
-        SHA256_Final(hash, &sha256);
         SHA256_Update(&sha256_2, hash, SHA256_DIGEST_LENGTH);
         SHA256_Final(hash2, &sha256_2);
         for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
@@ -42,16 +53,19 @@ namespace Helper
 
     std::string Hash160(std::string s)
     {   
-        char outputBuffer[65];
-        std::string result;
         unsigned char hash[SHA256_DIGEST_LENGTH];
         unsigned char hash2[RIPEMD160_DIGEST_LENGTH];
+        cpp_int i("0x"+ s);
+        unsigned char bytes[s.length()/2];
+        export_bits(i, bytes, 8);
         SHA256_CTX sha256;
         SHA256_Init(&sha256);
+        SHA256_Update(&sha256, bytes, sizeof(bytes));
+        SHA256_Final(hash, &sha256);
+        char outputBuffer[65];
+        std::string result;
         RIPEMD160_CTX ripemd160;
         RIPEMD160_Init(&ripemd160);
-        SHA256_Update(&sha256, s.c_str(), s.length());
-        SHA256_Final(hash, &sha256);
         RIPEMD160_Update(&ripemd160, hash, SHA256_DIGEST_LENGTH);
         RIPEMD160_Final(hash2, &ripemd160);
         for (int i = 0; i < RIPEMD160_DIGEST_LENGTH; i++)
@@ -90,14 +104,14 @@ namespace Helper
 
     std::string Encode_Base_58_Checksum(std::string s)
     {
-        auto postsFix = Hash256(s).substr(0,8);
+        auto postsFix = Hash256(s, false).substr(0,8);
         return Encode_Base_58(s + postsFix);
     }
 
     std::string int_to_little_endian(cpp_int n, int byte_size)
     {
         std::stringstream stream;
-        stream << std::hex << n;
+        stream << std::hex << std::setfill('0') << std::setw(byte_size*2) << n;
         std::string s(stream.str());
         if (byte_size == 1) return s;
         int l = strlen(s.c_str());
@@ -116,9 +130,9 @@ namespace Helper
 
     std::string int_to_little_endian(std::string n, int byte_size)
     {
-        cpp_int i ("0x" + n);
+        cpp_int i (n);
         std::stringstream stream;
-        stream << std::hex << i;
+        stream << std::hex << std::setfill('0') << std::setw(byte_size*2) << n;
         std::string s(stream.str());
         int l = strlen(s.c_str());
         for (int i = 0,j = l; i < l/2; i += 2, j-=2) 
@@ -138,7 +152,7 @@ namespace Helper
     {
         //if (byte_size % 2 != 0 || byte_size > 32) throw std::invalid_argument("Byte size Error");
         std::stringstream stream;
-        stream << std::hex << n;
+        stream << std::hex << std::setfill('0') << std::setw(byte_size*2) << n;
         std::string s(stream.str());
         return s;
     }
@@ -153,7 +167,7 @@ namespace Helper
         }
         std::string result = int_to_big_endian(num, 25);
         std::string checksum = result.substr(result.length() - 8);
-        if (Hash256(result.substr(0 , result.length() - 8)).substr(0, 8) != checksum)
+        if (Hash256(result.substr(0 , result.length() - 8), false).substr(0, 8) != checksum)
         {
             throw std::invalid_argument("Bad Address");
         }
@@ -236,7 +250,7 @@ namespace Helper
         }
         else 
         {
-            std::string ss = s + 'h';
+            std::string ss = "0x" + s;
             cpp_int i = cpp_int(ss.c_str());
             return i;
         }

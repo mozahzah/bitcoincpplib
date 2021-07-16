@@ -29,8 +29,8 @@ std::string Script::Serialize()
     {
         if (cmd.size() < 4) 
         {   
-            std::stoi(cmd);
-            result += Helper::int_to_little_endian(cmd, 1);
+            int i = std::stoi(cmd);
+            result += Helper::int_to_little_endian(i, 1);
         }
         else 
         {   
@@ -71,7 +71,7 @@ Script Script::Parse(std::string& s)
     {
         std::string current = Helper::Extract(s,1);
         i += 1;
-        std::string current_hex = current + 'h';
+        std::string current_hex = "0x" + current;
         int current_byte = cpp_int(current_hex.c_str()).convert_to<int>();
         if (current_byte >= 1 && current_byte <= 75)
         {

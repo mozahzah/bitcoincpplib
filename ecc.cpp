@@ -228,10 +228,17 @@ Signature Parse(std::string der_signature)
 Signature ECC::PrivateKey::Sign(cpp_int z)
 {
     //DL_Algorithm_DSA_RFC6979<std::string, SHA256> d;
-    cpp_int k = 123;//d.GenerateRandom(this->secret, N, z);
+    
+    std::stringstream stream;
+    stream << std::hex << this->secret;
+    cpp_int k = uint256_t("0x" + Helper::Hash256(stream.str(), false));//d.GenerateRandom(this->secret, N, z);
+    std::cout << k << std::endl;
     cpp_int r = (G * k).x.num;
     cpp_int k_inv = powm(k, N-2, N);
+    auto kk = r * this->secret;
+    std::cout << kk << std::endl;
     cpp_int s = (z + r * this->secret) * k_inv % N;
+    std::cout << s << std::endl;
     if (s > N/2){s = N - s;}
     return Signature(r, s);
 }
@@ -261,9 +268,7 @@ std::string ECC::Signature::Der()
     std::string firstbyte;
     firstbyte.push_back(rbin[0]);
     firstbyte.push_back(rbin[1]);
-    firstbyte.push_back('h');
-
-    if (cpp_int(firstbyte.c_str()) > 0x80)
+    if (cpp_int("0x" + firstbyte) & 0x80)
     {
         rbin = "00" + rbin;
     }
@@ -284,9 +289,7 @@ std::string ECC::Signature::Der()
     firstbyte.clear();
     firstbyte.push_back(sbin[0]);
     firstbyte.push_back(sbin[1]);
-    firstbyte.push_back('h');
-
-    if (cpp_int(firstbyte.c_str()) > 0x80)
+    if (cpp_int("0x" + firstbyte) & 0x80)
     {
         sbin = "00" + sbin;   
     }
