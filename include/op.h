@@ -1,6 +1,9 @@
+#ifndef OP_H
+#define OP_H
+
 #include <vector>
 #include <string>
-
+#include "ecc.h"
 
 enum OP_CODES
 {
@@ -43,7 +46,7 @@ enum OP_CODES
     OP_DUP = 118,	
 };
 
-class Op
+class OP
 {
     public:
         bool OP_0(std::vector<std::string> stack);
@@ -88,3 +91,5 @@ class Op
     // bool OP_SHA256();
     // bool OP_HASH160();
 };
+
+#endif

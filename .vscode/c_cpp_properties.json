@@ -5,22 +5,14 @@
             "includePath": [
                 "${default}",
                 "${workspaceFolder}",
+                "${workspaceFolder}/include",
                 "C:/msys64/mingw64/include/boost",
                 "C:/msys64/mingw64/include/openssl",
                 "C:/msys64/mingw64/include/curl"
             ],
             "intelliSenseMode": "windows-gcc-x86",
-            "cStandard": "c17",
             "cppStandard": "c++17",
-            "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
-            "browse": {
-                "path": [
-                    "${default}",
-                    "${workspaceFolder}",
-                    "C:/msys64/mingw64/include/cryptopp",
-                    "C:/msys64/mingw64/include/curl"
-                ]
-            }
+            "compilerPath": "C:/msys64/mingw64/bin/g++.exe"
         }
     ],
     "version": 4
