@@ -16,8 +16,8 @@
                 "-lssl",
                 "-lcrypto",
                 "-o",
-                "${fileDirname}\\main",
-                "${fileDirname}\\main copy.cpp",
+                "${workspaceFolder}\\main",
+                "${workspaceFolder}\\main.cpp",
             ],
             "group": {
                 "kind": "build",
